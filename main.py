@@ -26,6 +26,7 @@ class MyApp(QDialog):
         self.initUI()
 
     def initUI(self):
+        # Parameter로 각각 Machine()을 받아야 할 듯.
         # Tab
         tabs = QTabWidget()
         tabs.addTab(FirstTab(), 'Dataset')
@@ -80,6 +81,11 @@ class FirstTab(QWidget):
         self.test_le = QLineEdit()
         self.dir_le = QLineEdit()
 
+        # set hyper parameter
+        self.epochs_spinBox = QSpinBox()
+        self.units_spinBox = QSpinBox()
+        self.batch_spinBox = QSpinBox()
+
         # Dataset Head Display
         self.head_te = QTextEdit()
 
@@ -106,9 +112,6 @@ class FirstTab(QWidget):
 
         self.setLayout(grid)
 
-        # Button
-        self.setButton()
-
     # Button setting
     def setButton(self):
         # buttons
@@ -121,9 +124,38 @@ class FirstTab(QWidget):
         setBtn.setToolTip('<b>Set Parameter</b>')
         setBtn.move(850, 800/3 - 25)
         setBtn.resize(setBtn.sizeHint())
-
         # Quit
         #open_btn.clicked.connect(QCoreApplication.instance().quit)
+    def set_hyperparameter(self):
+        self.epochs_spinBox.text()
+        self.units_spinBox.text()
+        self.batch_spinBox.text()
+        print(self.epochs_spinBox.text(), self.units_spinBox.text(), self.batch_spinBox.text())
+        epochs = int(self.epochs_spinBox.text())
+        units = int(self.units_spinBox.text())
+        batch = int(self.batch_spinBox.text())
+
+        ## 학습 시작 ##
+        self.pbar = QProgressBar(self)
+        self.pbar.setGeometry(30, 40, 200, 25)
+        self.machine.run(epochs=epochs, units=units, batch_size=batch)
+
+        # 190723
+        #1 시작~ 끝난 시간 추가
+        #2 Tab 2 (learning tab) 확인하라는 메시지박스 표시
+        #3 데이터 셋 없을 경우 데이터셋 추가하라는 메시지 추가
+        #4 쓰레드 추가
+
+    def doAction(self):
+        if self.timer.isActive():
+            self.timer.stop()
+            #self.btn.setText('Start')
+        else:
+            self.timer.start(100, self)
+            #self.btn.setText('Stop')
+
+
+        print(self.epochs_spinBox.text(), self.units_spinBox.text(), self.batch_spinBox.text())
 
     # 불러온 파일 이름 저장
     def show_dialog(self):
@@ -147,21 +179,15 @@ class FirstTab(QWidget):
             self.test_le.setText(str(self.machine.testDatasetNumber()))
 
             self.head_te.setText(str(self.machine.datasethead()))
-
-
-
             # Dataset 호출
-
             #self.hbox_label.addWidget(self.label[-1])
 
     def createDatasetGroup(self):
 
         groupbox = QGroupBox('■ Dataset Preview')
-
         layout = QVBoxLayout()
 
         hbox_total = QHBoxLayout()
-        #hbox_xy.addStretch(5)
         hbox_total.addWidget(QLabel(' ● Total : '))
         hbox_total.addWidget(self.total_le)
         self.total_le.setAlignment(Qt.AlignLeft)
@@ -175,7 +201,6 @@ class FirstTab(QWidget):
         hbox_test.addWidget(QLabel(' ● Test : '))
         hbox_test.addWidget(self.test_le)
         self.test_le.setAlignment(Qt.AlignLeft)
-
 
         hbox_dir = QHBoxLayout()
         hbox_dir.addWidget(QLabel(' ● Directory : '))
@@ -195,7 +220,6 @@ class FirstTab(QWidget):
         open_btn2.clicked.connect(self.show_dialog)
         hbox_open.addWidget(open_btn2)
 
-        #
         #hbox_xy.addStretch(3)
         layout.addLayout(hbox_total)
         layout.addLayout(hbox_train)
@@ -203,7 +227,6 @@ class FirstTab(QWidget):
         layout.addLayout(hbox_dir)
         layout.addLayout(hbox_head)
         layout.addLayout(hbox_open)
-
 
         layout.addStretch(1)
         groupbox.setLayout(layout)
@@ -213,47 +236,38 @@ class FirstTab(QWidget):
     # Hyper Parameter
     def createHyperParameterGroup(self):
         groupbox = QGroupBox('Set Hyper Parameters')
-        groupbox.setFlat(True)
+        #groupbox.setFlat(True)
 
-        lbl1 = QLabel('Epoch')
-        spinbox = QSpinBox()
-        spinbox.setMinimum(-10)
-        spinbox.setMaximum(30)
-        # self.spinbox.setRange(-10, 30)
-        spinbox.setSingleStep(2)
-        #lbl2 = QLabel('0')
+        layout = QVBoxLayout()
 
-        #spinbox.valueChanged.connect(self.value_changed)
-        #lbl2.setText(str(spinbox.value()))
+        hbox_epochs = QHBoxLayout()
+        hbox_epochs.addWidget(QLabel(' ● Epochs : '))
+        hbox_epochs.addWidget(self.epochs_spinBox)
+        self.epochs_spinBox.setAlignment(Qt.AlignLeft)
 
-        lbl2 = QLabel('Batch_size')
-        spinbox2 = QSpinBox()
-        spinbox2.setMinimum(-10)
-        spinbox2.setMaximum(30)
-        spinbox2.setSingleStep(2)
+        hbox_units = QHBoxLayout()
+        hbox_units.addWidget(QLabel(' ● Units : '))
+        hbox_units.addWidget(self.units_spinBox)
+        self.units_spinBox.setAlignment(Qt.AlignLeft)
 
-        # Activation
-        lbl3 = QLabel('Activation Func')
-        spinbox3 = QSpinBox()
-        spinbox3.setMinimum(-10)
-        spinbox3.setMaximum(30)
-        spinbox3.setSingleStep(2)
+        hbox_batch = QHBoxLayout()
+        hbox_batch.addWidget(QLabel(' ● Batch_Size : '))
+        hbox_batch.addWidget(self.batch_spinBox)
+        self.batch_spinBox.setAlignment(Qt.AlignLeft)
 
-        vbox = QVBoxLayout()
+        hbox_learning = QHBoxLayout()
+        learning_btn  = QPushButton('Parameter Setting And Learning Start')
+        learning_btn.resize(learning_btn .sizeHint())
+        learning_btn.clicked.connect(self.set_hyperparameter) #학습함수
+        hbox_learning.addWidget(learning_btn)
 
-        vbox.addWidget(lbl1)
-        vbox.addWidget(spinbox)
+        layout.addLayout(hbox_epochs)
+        layout.addLayout(hbox_units)
+        layout.addLayout(hbox_batch)
+        layout.addLayout(hbox_learning)
 
-        vbox.addWidget(lbl2)
-        vbox.addWidget(spinbox2)
-
-        vbox.addWidget(lbl3)
-        vbox.addWidget(spinbox3)
-
-        vbox.addStretch()
-
-        groupbox.setLayout(vbox)
-
+        layout.addStretch(1)
+        groupbox.setLayout(layout)
         return groupbox
 
     # Dataset head
@@ -261,7 +275,6 @@ class FirstTab(QWidget):
         groupbox = QGroupBox('Dataset Sample (50 Indexes)')
         groupbox.setFlat(True)
         return groupbox
-
 
     # Training Start, save, load
     def createTrainingManageGroup(self):
