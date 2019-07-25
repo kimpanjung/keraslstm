@@ -546,19 +546,36 @@ class SecondTab(QWidget):
 
         self.setLayout(grid)
 
+    def textEditUpdate(self):
+        singleton = Singleton.getInstance()
+        self.hyper_te.setText(str(singleton.getEpoch()))
+
+
     def hyperParameters(self):
         groupbox = QGroupBox('Hyper Parameters')
         groupbox.setFlat(True)
 
-        #######################
-        hbox = QHBoxLayout()
-        hbox.addWidget(self.hyper_te)
+        layout = QVBoxLayout()
+        vbox = QVBoxLayout()
 
-        singleton = Singleton.getInstance()
-        if singleton.learn == True:
-            self.hyper_te.setText(str(singleton.getEpoch()))
+        update_btn = QPushButton('Update')
+        update_btn.resize(update_btn.sizeHint())
+        update_btn.clicked.connect(self.textEditUpdate)  # 학습함수
+        vbox.addWidget(update_btn)
 
-        groupbox.setLayout(hbox)
+        start_btn = QPushButton('Start')
+        start_btn.resize(update_btn.sizeHint())
+        vbox.addWidget(start_btn)
+
+        # TextLine
+        vbox.addWidget(self.hyper_te)
+
+        #singleton = Singleton.getInstance()
+        #self.hyper_te.setText(str(singleton.getEpoch()))
+        layout.addLayout(vbox)
+        groupbox.setLayout(layout)
+
+       # groupbox.setLayout(hbox)
         return groupbox
 
     def learningStart(self):
