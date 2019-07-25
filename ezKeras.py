@@ -68,8 +68,11 @@ class Machine():
         total = self.data.df_temp.head(50)
         return total
 
+    def dayOfStart(self):
+        return self.data.df_temp.index[0]
 
-
+    def dayOfEnd(self):
+        return self.data.df_temp.index[-1]
 
     def run(self, epochs, units, batch_size):
         d = self.data
@@ -82,7 +85,17 @@ class Machine():
         model.add(LSTM(units, input_shape=(177, 1)))  # (timestep, feature)
         model.add(Dense(3))  # output = 1
         model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
+        # self.loss = 'mean_squared_error'
+        # self.optimizer = 'adam'
+
+        model.compile(loss=d.loss, optimizer=d.optimizer, metrics=['accuracy'])
         model.summary()
+
+        self.epochs = epochs
+        self.units = units
+        self.batch_size = batch_size
+        # self.model = model
+
 
         early_stop = EarlyStopping(monitor='loss', patience=1, verbose=1)
 
@@ -145,6 +158,18 @@ class Machine():
 
         print("\n Loss : %.4f" % (model.evaluate(X_train_t, y_train)[0]))
 
+    def display_hyperParameter(self):
+        #print(self.model.summary())
+        print('total data : ', self.data.totalDataNumber())
+        print('test data : ', self.data.testDataNumber())
+        print('train data : ', self.data.trainDataNumber())
+        print('epochs : ', self.epochs)
+        print('units : ', self.units)
+        print('batch_size : ', self.batch_size)
+        print('optimizer : adam')
+        print('loss function : mean_squared_error ')
+
+
 
 class Dataset:
    # def __init__(self, fname='C:\\Users\PJ\PycharmProjects\ezKeras\inner_data_new_0705.csv'):
@@ -200,10 +225,13 @@ class Dataset:
         self.train = train
         self.test = test
         #######################
-
         self.X_train, self.X_test, self.y_train, self.y_test = X_train, X_test, y_train, y_test
         self.X_train_t = X_train_t
         self.X_test_t = X_test_t
+
+        self.loss = 'mean_squared_error'
+        self.optimizer = 'adam'
+
 
     def totalDataNumber(self):
         return str(self.df_temp.values.shape[0])
@@ -213,6 +241,9 @@ class Dataset:
 
     def testDataNumber(self):
         return str(self.test.values.shape[0])
+
+    def origindataframe(self):
+        return self.df_temp
 
 
 def load_data(fname):
@@ -227,4 +258,3 @@ def load_data(fname):
 
 if __name__ == '__main__':
     main()
-
